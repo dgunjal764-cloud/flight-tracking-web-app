@@ -1,22 +1,28 @@
-async function getFlights() {
-  const res = await fetch("https://opensky-network.org/api/states/all");
-  const data = await res.json();
+async function fetchFlights() {
+  const result = document.getElementById("result");
+  result.innerHTML = "Loading...";
 
-  const flights = data.states;
-  const container = document.getElementById("result");
+  try {
+    const response = await fetch("https://opensky-network.org/api/states/all");
 
-  container.innerHTML = "";
+    const data = await response.json();
 
-  flights.slice(0, 5).forEach(f => {
-    const div = document.createElement("div");
-    div.className = "flight";
+    if (!data.states || data.states.length === 0) {
+      result.innerHTML = "No flights found 😢";
+      return;
+    }
 
-    div.innerHTML = `
-      ✈️ ${f[1]} <br>
-      🌍 ${f[2]} <br>
-      🛫 Altitude: ${f[7] || "N/A"}
-    `;
+    const flights = data.states.slice(0, 5);
 
-    container.appendChild(div);
-  });
+    result.innerHTML = flights.map(flight => `
+      <div>
+        ✈️ Flight: ${flight[1] || "N/A"} <br>
+        🌍 Country: ${flight[2] || "N/A"} <br><br>
+      </div>
+    `).join("");
+
+  } catch (error) {
+    result.innerHTML = "Error fetching flights 😭";
+    console.error(error);
+  }
 }
